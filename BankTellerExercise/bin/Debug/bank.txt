@@ -1,0 +1,7 @@
+Bank|2
+BankCustomer|Daniel|123 Main Street|555-555-5555|2
+S5658782|1000
+C1825615|25250
+BankCustomer|Sari|125 Left Place|867-5309|2
+C8510213|14750
+S1493634|0

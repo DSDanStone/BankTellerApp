@@ -1,0 +1,11 @@
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\bin\Debug\BankTellerExerciseTests.dll
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\bin\Debug\BankTellerExerciseTests.pdb
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\bin\Debug\BankTellerExercise.exe
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\bin\Debug\BankTellerExercise.pdb
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\bin\Debug\BankTellerExercise.exe.config
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\obj\Debug\BankTellerExerciseTests.csprojAssemblyReference.cache
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\obj\Debug\BankTellerExerciseTests.csproj.CoreCompileInputs.cache
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\obj\Debug\BankTellerExerciseTests.csproj.CopyComplete
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\obj\Debug\BankTellerExerciseTests.dll
+C:\Users\Daniel Stone\source\repos\Bank Teller\BankTellerExerciseTests\obj\Debug\BankTellerExerciseTests.pdb

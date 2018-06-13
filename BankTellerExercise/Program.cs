@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using BankTellerExercise.Classes;
 
 namespace BankTellerExercise
@@ -11,25 +12,15 @@ namespace BankTellerExercise
 	{
 		static void Main(string[] args)
 		{
-			// Initialize a few Bank Accounts, a Bank Customer, and a Bank
-			CheckingAccount secondAccount = new CheckingAccount();
-			secondAccount.AccountNumber = "C8975034";
-			SavingsAccount thirdAccount = new SavingsAccount();
-			thirdAccount.AccountNumber = "S3453455";
-
-			BankCustomer andrew = new BankCustomer();
-			andrew.AddAccount(secondAccount);
-			andrew.AddAccount(thirdAccount);
-			andrew.Name = "Andrew";
-
-			Bank bank = new Bank();
-			bank.AddCustomer(andrew);
+			// Read Bank from file
+			string filePath = Path.Combine(Environment.CurrentDirectory, "bank.txt");
+			Bank bank = GetBankFromFile(filePath);
 
 			// Prompt the user for who they are
-			BankCustomer user = ChooseUser(bank);
+			BankCustomer user = ChooseUser(bank, true);
 
 			// Prompt the user for which account to enter
-			BankAccount working = PickAnAccount(user);
+			BankAccount working = PickAnAccount(bank, user, true);
 			Console.Clear();
 
 			// Prompt user for what they would like to do
@@ -47,37 +38,31 @@ namespace BankTellerExercise
 						MakeWithdrawl(working);
 						break;
 					case "3": // Make a Transfer
-						MakeTransfer(working, user);
+						MakeTransfer(bank, working);
 						break;
 					case "4": // Show Balance
-						ShowBalance(working);						
+						ShowBalance(working);
 						break;
 					case "5": //Change or add Account
-						working = PickAnAccount(user);
+						working = PickAnAccount(bank, user, true);
 						break;
 					case "6": //Change User info
 						ChangeUserInfo(user);
 						break;
 					case "7": //Change User 
-						user = ChooseUser(bank);
-						working = PickAnAccount(user);
+						user = ChooseUser(bank, true);
+						working = PickAnAccount(bank, user, true);
+						break;
+					case "8": //Save Changes
+						WriteBankToFile(bank, filePath);
 						break;
 				}
 				input = PromptUserForMenuChoice(user, working);
 			}
-		}
-
-		/// <summary>
-		/// Shows the account Balance
-		/// </summary>
-		/// <param name="working">The current account</param>
-		static void ShowBalance(BankAccount working)
-		{
-			Console.WriteLine($"Account#: {working.AccountNumber}");
-			Console.WriteLine("Your current balance is: " + working.Balance.ToString("C"));
-			Console.WriteLine("Press any key to continue...");
-			Console.ReadKey();
+			WriteBankToFile(bank, filePath);
 			Console.Clear();
+			Console.WriteLine("Thanks for banking with TE Bank.");
+			Console.WriteLine("Have a great day.");
 		}
 
 		/// <summary>
@@ -85,24 +70,28 @@ namespace BankTellerExercise
 		/// </summary>
 		/// <param name="bank">The Bank</param>
 		/// <returns>A user</returns>
-		static BankCustomer ChooseUser(Bank bank)
+		static BankCustomer ChooseUser(Bank bank, bool allowAdd)
 		{
 			HashSet<string> validChoices = new HashSet<string>();
 			string input = "";
 
 			do
 			{
+				Console.Clear();
 				Console.WriteLine("Bank Customers");
 				for (int i = 1; i <= bank.Customers.Length; i++)
 				{
 					validChoices.Add(i.ToString());
 					Console.WriteLine($"{i}. User: {bank.Customers[i - 1].Name}");
 				}
-				Console.WriteLine($"{bank.Customers.Length + 1}. Add a user");
+				if (allowAdd)
+				{
+					Console.WriteLine($"{bank.Customers.Length + 1}. Add a user");
+				}
 				Console.Write("Pick an option: ");
 				input = Console.ReadLine().ToUpper();
 				Console.Clear();
-				if (input == (bank.Customers.Length + 1).ToString())
+				if (allowAdd && input == (bank.Customers.Length + 1).ToString())
 				{
 					Console.WriteLine("Adding a User:");
 					BankCustomer newCustomer = new BankCustomer();
@@ -170,10 +159,45 @@ namespace BankTellerExercise
 		}
 
 		/// <summary>
+		/// Choose an account from a list
+		/// </summary>
+		/// <param name="accounts">A list of accounts to choose from</param>
+		/// <returns>The chosen account</returns>
+		static BankAccount PickAnAccount(Bank bank, BankCustomer user, bool allowAdd)
+		{
+			HashSet<string> validChoices = new HashSet<string>();
+			string input = "";
+
+			do
+			{
+				Console.WriteLine("Accounts:");
+				for (int i = 1; i <= user.Accounts.Length; i++)
+				{
+					validChoices.Add(i.ToString());
+					Console.WriteLine($"{i}. Account#: {user.Accounts[i - 1].AccountNumber}");
+				}
+				if (allowAdd)
+				{
+					Console.WriteLine($"{user.Accounts.Length + 1}. Add an account");
+				}
+				Console.Write("Pick an option: ");
+				input = Console.ReadLine().ToUpper();
+				Console.Clear();
+				if (allowAdd && input == (user.Accounts.Length + 1).ToString())
+				{
+					AddAnAccount(bank, user);
+				}
+			} while (!validChoices.Contains(input));
+
+			int choice = int.Parse(input);
+			return user.Accounts[choice - 1];
+		}
+
+		/// <summary>
 		/// Allows the user to create a new bank account
 		/// </summary>
 		/// <param name="customer">The current user</param>
-		static void AddAnAccount(BankCustomer customer)
+		static void AddAnAccount(Bank bank, BankCustomer customer)
 		{
 			string[] validChoices = { "1", "2", "Q" };
 			string input = "";
@@ -202,9 +226,15 @@ namespace BankTellerExercise
 				{
 					break;
 				}
+
 				Random random = new Random();
 				string type = (input == "1") ? "C" : "S";
-				int accountNumber = random.Next(1000000, 10000000);
+				int accountNumber = 0;
+				do
+				{
+					accountNumber = random.Next(1000000, 10000000);
+				} while (bank.AccountNumbers.Contains(type + accountNumber));
+
 				Console.WriteLine($"Your new account is : {type}{accountNumber}");
 				switch (input)
 				{
@@ -220,44 +250,6 @@ namespace BankTellerExercise
 						break;
 				}
 			}
-		}
-
-		/// <summary>
-		/// Prompts the user with a Menu until the enter a valid option
-		/// </summary>
-		/// <returns>The users choice</returns>
-		static string PromptUserForMenuChoice(BankCustomer user, BankAccount account)
-		{
-			string[] validChoices = { "1", "2", "3", "4", "5", "6", "7", "Q" };
-			string input = "";
-
-			do
-			{
-				Console.WriteLine($"User: {user.Name}");
-				Console.WriteLine($"Account#: {account.AccountNumber}");
-				if (user.IsVIP)
-				{
-					Console.WriteLine("********VIP********");
-				}
-				Console.WriteLine("      TE Bank");
-				Console.WriteLine("-------------------");
-				Console.WriteLine("     MAIN MENU");
-				Console.WriteLine("1. Make a Deposit");
-				Console.WriteLine("2. Make a Withdrawl");
-				Console.WriteLine("3. Make a Transfer");
-				Console.WriteLine("4. Show Balance");
-				Console.WriteLine("5. Change or Add Account");
-				Console.WriteLine("6. Change User Info");
-				Console.WriteLine("7. Change User");
-				Console.WriteLine("Q. Quit");
-				Console.WriteLine();
-				Console.Write("Make a choice: ");
-				input = Console.ReadLine().ToUpper();
-				Console.Clear();
-			}
-			while (!validChoices.Contains(input));
-
-			return input;
 		}
 
 		/// <summary>
@@ -292,17 +284,16 @@ namespace BankTellerExercise
 			if (initialBalance != finalBalance)
 			{
 				Console.WriteLine("Withdrawl Successful!");
+				if (initialBalance - ammountToWithdraw != finalBalance)
+				{
+					Console.WriteLine("Fee Assesed.");
+					Console.Beep(800, 100);
+					Console.Beep(500, 500);
+				}
 			}
 			else
 			{
 				Console.WriteLine("Withdrawl Failed!");
-			}
-			if (initialBalance - ammountToWithdraw != finalBalance)
-			{
-				Console.WriteLine("Fee Assesed.");
-				Console.Beep(800, 100);
-				Console.Beep(500, 500);
-
 			}
 
 			Console.WriteLine("Press any key to continue...");
@@ -314,14 +305,24 @@ namespace BankTellerExercise
 		/// Handles the Transfer transaction
 		/// </summary>
 		/// <param name="userAccount">The User Account to change</param>
-		static void MakeTransfer(BankAccount userAccount, BankCustomer user)
+		static void MakeTransfer(Bank bank, BankAccount userAccount)
 		{
 			Console.WriteLine();
+
+
 			Console.WriteLine("Which account would you like to transfer to?");
-			BankAccount chosenAccount = PickAnAccount(user);
-
-
-			Console.WriteLine($"Transfer to Account: {chosenAccount.AccountNumber}");
+			BankCustomer chosenUser = ChooseUser(bank, false);
+			BankAccount chosenAccount = PickAnAccount(bank, chosenUser, false);
+			while (chosenAccount == userAccount)
+			{
+				Console.WriteLine("You cannot transfer to your own account.");
+				System.Threading.Thread.Sleep(1000);
+				chosenUser = ChooseUser(bank, false);
+				chosenAccount = PickAnAccount(bank, chosenUser, false);
+				Console.Clear();
+			}
+			Console.Clear();
+			Console.WriteLine($"Transfer to {chosenUser.Name}'s Account: {chosenAccount.AccountNumber}");
 			Console.Write("How much would you like to transfer?: ");
 			decimal ammountToTransfer = GetANumber();
 
@@ -332,17 +333,16 @@ namespace BankTellerExercise
 			if (initialBalance != finalBalance)
 			{
 				Console.WriteLine("Transfer Successful!");
+				if (initialBalance - ammountToTransfer != finalBalance)
+				{
+					Console.WriteLine("Fee Assesed.");
+					Console.Beep(800, 100);
+					Console.Beep(500, 500);
+				}
 			}
 			else
 			{
 				Console.WriteLine("Transfer Failed!");
-			}
-
-			if (initialBalance - ammountToTransfer != finalBalance)
-			{
-				Console.WriteLine("Fee Assesed.");
-				Console.Beep(800, 100);
-				Console.Beep(500, 500);
 			}
 
 			Console.WriteLine("Press any key to continue...");
@@ -351,35 +351,143 @@ namespace BankTellerExercise
 		}
 
 		/// <summary>
-		/// Choose an account from a list
+		/// Shows the account Balance
 		/// </summary>
-		/// <param name="accounts">A list of accounts to choose from</param>
-		/// <returns>The chosen account</returns>
-		static BankAccount PickAnAccount(BankCustomer user)
+		/// <param name="working">The current account</param>
+		static void ShowBalance(BankAccount working)
 		{
-			HashSet<string> validChoices = new HashSet<string>();
+			Console.WriteLine($"Account#: {working.AccountNumber}");
+			Console.WriteLine("Your current balance is: " + working.Balance.ToString("C"));
+			Console.WriteLine("Press any key to continue...");
+			Console.ReadKey();
+			Console.Clear();
+		}
+
+		/// <summary>
+		/// Reads the bank from a text file
+		/// </summary>
+		/// <param name="filepath">The file path to read from</param>
+		/// <returns>The bank</returns>
+		static Bank GetBankFromFile(string filePath)
+		{
+			Bank bank = new Bank();
+			try
+			{
+				using (StreamReader sr = new StreamReader(filePath))
+				{
+					int numberOfCustomers = int.Parse(sr.ReadLine().Split('|')[1]);
+
+					for (int i = 0; i < numberOfCustomers; i++)
+					{
+						string[] line = sr.ReadLine().Split('|');
+						BankCustomer bankCustomer = new BankCustomer();
+						bankCustomer.Name = line[1];
+						bankCustomer.Address = line[2];
+						bankCustomer.PhoneNumber = line[3];
+						int numberOfAccounts = int.Parse(line[4]);
+						for (int j = 0; j < numberOfAccounts; j++)
+						{
+							line = sr.ReadLine().Split('|');
+							if (line[0][0] == 'C')
+							{
+								CheckingAccount checkingAccount = new CheckingAccount();
+								checkingAccount.AccountNumber = line[0];
+								checkingAccount.Deposit(decimal.Parse(line[1]));
+								bankCustomer.AddAccount(checkingAccount);
+							}
+							else
+							{
+								SavingsAccount savingsAccount = new SavingsAccount();
+								savingsAccount.AccountNumber = line[0];
+								savingsAccount.Deposit(decimal.Parse(line[1]));
+								bankCustomer.AddAccount(savingsAccount);
+							}
+						}
+						bank.AddCustomer(bankCustomer);
+					}
+				}
+			}
+			catch (IOException ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+			return bank;
+		}
+
+		/// <summary>
+		/// Writes the bank back out to a text file to save it
+		/// </summary>
+		/// <param name="bank">The bank to write out</param>
+		/// <param name="filePath">The file path to write to</param>
+		static void WriteBankToFile(Bank bank, string filePath)
+		{
+			try
+			{
+				using (StreamWriter sw = new StreamWriter(filePath, false))
+				{
+					int numberOfCustomers = bank.Customers.Length;
+					sw.WriteLine($"Bank|{numberOfCustomers}");
+					for (int i = 0; i < numberOfCustomers; i++)
+					{
+						BankCustomer customer = bank.Customers[i];
+						sw.WriteLine($"BankCustomer|{customer.Name}|{customer.Address}|{customer.PhoneNumber}|{customer.Accounts.Length}");
+						for (int j = 0; j < customer.Accounts.Length; j++)
+						{
+							sw.WriteLine($"{customer.Accounts[j].AccountNumber}|{customer.Accounts[j].Balance}");
+						}
+					}
+				}
+			}
+
+			catch (IOException ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+			Console.Clear();
+			Console.WriteLine("Changes Saved");
+			Console.WriteLine("Press any key to continue...");
+			Console.ReadKey();
+			Console.Clear();
+		}
+
+		/// <summary>
+		/// Prompts the user with a Menu until the enter a valid option
+		/// </summary>
+		/// <returns>The users choice</returns>
+		static string PromptUserForMenuChoice(BankCustomer user, BankAccount account)
+		{
+			string[] validChoices = { "1", "2", "3", "4", "5", "6", "7", "8", "Q" };
 			string input = "";
 
 			do
 			{
-				Console.WriteLine();
-				for (int i = 1; i <= user.Accounts.Length; i++)
+				Console.WriteLine($"User: {user.Name}");
+				Console.WriteLine($"Account#: {account.AccountNumber}");
+				if (user.IsVIP)
 				{
-					validChoices.Add(i.ToString());
-					Console.WriteLine($"{i}. Account#: {user.Accounts[i - 1].AccountNumber}");
+					Console.WriteLine("**********VIP***********");
 				}
-				Console.WriteLine($"{user.Accounts.Length + 1}. Add an account");
-				Console.Write("Pick an option: ");
+				Console.WriteLine("       TE Bank");
+				Console.WriteLine("------------------------");
+				Console.WriteLine("      MAIN MENU");
+				Console.WriteLine("1. Make a Deposit");
+				Console.WriteLine("2. Make a Withdrawl");
+				Console.WriteLine("3. Make a Transfer");
+				Console.WriteLine("4. Show Balance");
+				Console.WriteLine("5. Change or Add Account");
+				Console.WriteLine("6. Change User Info");
+				Console.WriteLine("7. Change User");
+				Console.WriteLine("8. Save Changes");
+				Console.WriteLine("Q. Quit");
+				Console.WriteLine();
+				Console.Write("Make a choice: ");
 				input = Console.ReadLine().ToUpper();
 				Console.Clear();
-				if (input == (user.Accounts.Length + 1).ToString())
-				{
-					AddAnAccount(user);
-				}
-			} while (!validChoices.Contains(input));
+			}
+			while (!validChoices.Contains(input));
 
-			int choice = int.Parse(input);
-			return user.Accounts[choice - 1];
+			return input;
 		}
 
 		/// <summary>
@@ -388,28 +496,13 @@ namespace BankTellerExercise
 		/// <returns>A number chosen by the user</returns>
 		static decimal GetANumber()
 		{
-			List<string> messages = new List<string>(){"Please enter a NUMBER: ",
-													   "No, a NUMBER: ",
-													   "Really, I just need a NUMBER: ",
-													   "It's not that hard. You can even use a decimal point: ",
-													   "Do you want to be here all day? Just give me a number: ",
-													   "Seriously!? You've heard of numbers, right?\nThey look like this: 0439618752\nJust type a few in: ",
-													   "Are you completely stupid?! It's just a number: ",
-													   "Just so we're clear, this is your last chance. \nI refuse to keep doing this.\nGive me a number: "};
 			string input = Console.ReadLine();
 			decimal output;
-			int counter = 0;
+
 			while (!decimal.TryParse(input, out output))
 			{
-				Console.Write(messages[counter]);
+				Console.Write("Please enter a NUMBER: ");
 				input = Console.ReadLine();
-				counter++;
-				if (counter == messages.Count)
-				{
-					Console.Clear();
-					Console.WriteLine("I told you");
-					Environment.Exit(0);
-				}
 			}
 			output = decimal.Parse(input);
 
