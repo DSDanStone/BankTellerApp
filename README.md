@@ -1,14 +1,23 @@
-# Inheritance Pair Exercises
+# BankTellerApp
+This began as a class exercise. I've built on it a lot since then, but here's the original prompt:
 
-## Bank Teller Application
+
+
+
+
+# Initial Exercise Requirments
+
+## Inheritance Pair Exercises
+
+### Bank Teller Application
 
 This is a two day set of exercises. Parts I is to be completed on Day One. Parts II and III should be finished on Day Two.
 
-### Day One - Part I 
+#### Day One - Part I 
 
 Create three new classes to represent a bank account, savings account, and a simple checking account.
 
-#### 1) BankAccount  
+##### 1) BankAccount  
 
 The BankAccount class represents a simple checking or savings account at a bank. The balance is represented in USD using the DollarAmount type.
 
@@ -48,7 +57,7 @@ b2.Transfer(b1, amountToTransfer);
 
 **2. Write unit tests to validate the state and functionality of your public methods.**
 
-#### 2) CheckingAccount
+##### 2) CheckingAccount
 
 CheckingAccount extends the BankAccount class you just created, plus the following additional rules:
 
@@ -61,7 +70,7 @@ CheckingAccount extends the BankAccount class you just created, plus the followi
 
 **2. Write unit tests to verify the functionality of your code.**
 
-#### 3) SavingsAccount
+##### 3) SavingsAccount
 
 SavingsAccount extends the BankAccount class you just created, plus the following additional rules:
 
@@ -75,13 +84,13 @@ SavingsAccount extends the BankAccount class you just created, plus the followin
 
 -----------
 
-### Day Two - Part II
+#### Day Two - Part II
 
 This is the Day Two continuation of the Bank Teller Application exercise.
 
 Create a new class that represents a bank customer.
 
-#### 1) BankCustomer  
+##### 1) BankCustomer  
 
 1. Create the BankCustomer class to represent a bank customer.
 
@@ -103,11 +112,10 @@ Create a new class that represents a bank customer.
 **2. Write unit tests to verify the functionality of your code.**
 
 ----------- 
-### Day Two - Part III
+#### Day Two - Part III
 
 Customers whose combined account balances are at least $25,000 are considered VIP customers and receive special privileges.  
 
 1. Add a `bool IsVIP` property (you may use a function too if you wish) to the bank customer class that returns true if the sum of all accounts belonging to that customer is at least $25,000 and false otherwise. 
 
 **Write unit tests to verify the functionality of your code.**
-# BankTellerApp
